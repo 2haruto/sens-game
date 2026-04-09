@@ -3,6 +3,8 @@ import TitleScreen from './game/scenes/TitleScreen'
 import MenuScreen from './game/scenes/MenuScreen'
 import StoryScreen from './game/scenes/StoryScreen'
 import BattleScreen from './game/scenes/BattleScreen'
+import GachaScreen from './game/scenes/GachaScreen'
+import TeamScreen from './game/scenes/TeamScreen'
 import './App.css'
 
 type Screen = 'title' | 'menu' | 'battle' | 'gacha' | 'story' | 'team'
@@ -25,26 +27,10 @@ function App() {
         <BattleScreen onBack={() => setCurrentScreen('menu')} />
       )}
       {currentScreen === 'gacha' && (
-        <div style={{ color: 'white', fontSize: '24px', textAlign: 'center', paddingTop: '200px' }}>
-          🎲 ガチャ画面（次回作成）
-          <div
-            style={{ marginTop: '40px', fontSize: '16px', color: '#888', cursor: 'pointer' }}
-            onClick={() => setCurrentScreen('menu')}
-          >
-            ← メニューに戻る
-          </div>
-        </div>
+        <GachaScreen onBack={() => setCurrentScreen('menu')} />
       )}
       {currentScreen === 'team' && (
-        <div style={{ color: 'white', fontSize: '24px', textAlign: 'center', paddingTop: '200px' }}>
-          👥 編成画面（次回作成）
-          <div
-            style={{ marginTop: '40px', fontSize: '16px', color: '#888', cursor: 'pointer' }}
-            onClick={() => setCurrentScreen('menu')}
-          >
-            ← メニューに戻る
-          </div>
-        </div>
+        <TeamScreen onBack={() => setCurrentScreen('menu')} />
       )}
     </div>
   )
