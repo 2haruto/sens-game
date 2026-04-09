@@ -1,243 +1,316 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useState } from 'react'
 
 interface MenuScreenProps {
   onNavigate: (screen: string) => void
 }
 
+const newsItems = [
+  '🔥 新イベント「覚醒の試練」開催中！',
+  '🎉 アップデート v1.1 配信開始！',
+  '⚔️ 新キャラ「鷹宮 零」参戦！',
+  '📢 メンテナンス予定: 4/15 03:00〜05:00',
+  '🎲 SSR確率2倍ガチャ開催中！',
+]
+
 export default function MenuScreen({ onNavigate }: MenuScreenProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [newsIndex, setNewsIndex] = useState(0)
+  const [newsFade, setNewsFade] = useState(true)
+  const [showNews, setShowNews] = useState(false)
 
   useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
+    const timer = setInterval(() => {
+      setNewsFade(false)
+      setTimeout(() => {
+        setNewsIndex(prev => (prev + 1) % newsItems.length)
+        setNewsFade(true)
+      }, 300)
+    }, 3500)
+    return () => clearInterval(timer)
+  }, [])
 
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+  const navButtons = [
+    { label: 'メニュー', screen: 'menu_sub', icon: '📋', color: '#aa88ff' },
+    { label: 'クエスト', screen: 'story', icon: '⚔️', color: '#ff4444' },
+    { label: '編成', screen: 'team', icon: '👥', color: '#00ccff' },
+    { label: 'ガチャ', screen: 'gacha', icon: '🎲', color: '#ffaa00' },
+    { label: 'ショップ', screen: 'shop', icon: '🛒', color: '#44ff88' },
+    { label: '設定', screen: 'option', icon: '⚙️', color: '#888888' },
+  ]
 
-    canvas.width = window.innerWidth
-    canvas.height = window.innerHeight
+  return (
+    <div style={{
+      width: '100vw', height: '100vh',
+      background: 'linear-gradient(180deg, #0a0a2a 0%, #050510 100%)',
+      display: 'flex', flexDirection: 'column', fontFamily: 'Arial, sans-serif',
+      overflow: 'hidden', position: 'relative',
+    }}>
 
-    // メニューボタンの定義
-    const buttons = [
-      { label: 'ストーリー', sublabel: 'STORY', screen: 'story', color: '#00ffff', icon: '📖' },
-      { label: 'バトル', sublabel: 'BATTLE', screen: 'battle', color: '#ff4444', icon: '⚔️' },
-      { label: 'ガチャ', sublabel: 'GACHA', screen: 'gacha', color: '#ffaa00', icon: '🎲' },
-      { label: '編成', sublabel: 'TEAM', screen: 'team', color: '#00ff88', icon: '👥' },
-    ]
+      {/* === 上部ステータスバー === */}
+      <div style={{
+        flex: '0 0 auto', display: 'flex', alignItems: 'stretch',
+        padding: '8px 10px', gap: 8,
+      }}>
+        {/* 左：コイン＋スタミナ */}
+        <div style={{
+          flex: '1 1 0', background: '#111133', borderRadius: 8,
+          padding: '6px 12px', border: '1px solid #222255',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 4 }}>
+            <span style={{ fontSize: 13 }}>🪙</span>
+            <span style={{ color: '#ffcc00', fontSize: 13, fontWeight: 'bold' }}>125,000</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <span style={{ fontSize: 13 }}>⚡</span>
+            <div style={{ flex: 1 }}>
+              <div style={{
+                background: '#0a0a1a', borderRadius: 3, height: 10,
+                border: '1px solid #333355', overflow: 'hidden',
+              }}>
+                <div style={{
+                  width: '75%', height: '100%', borderRadius: 3,
+                  background: 'linear-gradient(90deg, #44ff88, #00cc66)',
+                }} />
+              </div>
+            </div>
+            <span style={{ color: '#44ff88', fontSize: 10, fontWeight: 'bold' }}>75/100</span>
+          </div>
+        </div>
 
-    const buttonWidth = 280
-    const buttonHeight = 70
-    const gap = 20
-    const startY = canvas.height / 2 - ((buttonHeight + gap) * buttons.length) / 2 + 40
+        {/* 中央：ランク */}
+        <div style={{
+          flex: '0 0 70px', background: '#111133', borderRadius: 8,
+          padding: '6px 8px', border: '1px solid #222255',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <div style={{ fontSize: 8, color: '#888', letterSpacing: 2 }}>RANK</div>
+          <div style={{
+            fontSize: 24, fontWeight: 'bold', lineHeight: 1,
+            background: 'linear-gradient(180deg, #ffcc00, #ff8800)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+          }}>1</div>
+        </div>
 
-    // ボタンの座標を保存
-    const buttonRects = buttons.map((_, i) => ({
-      x: canvas.width / 2 - buttonWidth / 2,
-      y: startY + i * (buttonHeight + gap),
-      w: buttonWidth,
-      h: buttonHeight,
-    }))
+        {/* 右：名前＋ダイヤ＋お知らせ */}
+        <div style={{
+          flex: '1 1 0', display: 'flex', gap: 6,
+        }}>
+          <div style={{
+            flex: '1 1 auto', background: '#111133', borderRadius: 8,
+            padding: '6px 12px', border: '1px solid #222255',
+            display: 'flex', flexDirection: 'column', justifyContent: 'center',
+            alignItems: 'flex-end',
+          }}>
+            <div style={{ color: '#ffffff', fontSize: 13, fontWeight: 'bold', marginBottom: 4 }}>
+              甘利 悠真
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <span style={{ fontSize: 13 }}>💎</span>
+              <span style={{ color: '#00ccff', fontSize: 13, fontWeight: 'bold' }}>1,000</span>
+            </div>
+          </div>
 
-    // パーティクル
-    const particles: { x: number; y: number; speed: number; size: number; color: string; alpha: number }[] = []
-    const particleColors = ['#00ffff', '#ff00ff', '#ffff00', '#00ff88']
+          {/* お知らせアイコン */}
+          <div
+            onClick={() => setShowNews(!showNews)}
+            style={{
+              flex: '0 0 45px', background: '#111133', borderRadius: 8,
+              border: '1px solid #222255', display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+              position: 'relative',
+            }}
+          >
+            <span style={{ fontSize: 22 }}>✉️</span>
+            {/* 通知バッジ */}
+            <div style={{
+              position: 'absolute', top: 3, right: 3, width: 16, height: 16,
+              borderRadius: '50%', background: '#ff4444',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 9, color: '#fff', fontWeight: 'bold',
+            }}>3</div>
+          </div>
+        </div>
+      </div>
 
-    for (let i = 0; i < 30; i++) {
-      particles.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        speed: Math.random() * 0.3 + 0.1,
-        size: Math.random() * 2 + 0.5,
-        color: particleColors[Math.floor(Math.random() * particleColors.length)],
-        alpha: Math.random() * 0.3 + 0.1,
-      })
-    }
+      {/* === お知らせティッカー === */}
+      <div style={{
+        flex: '0 0 auto', margin: '0 10px', marginBottom: 5,
+      }}>
+        <div style={{
+          background: '#111133', borderRadius: 6, padding: '5px 12px',
+          border: '1px solid #222255', display: 'flex', alignItems: 'center', gap: 8,
+        }}>
+          <span style={{
+            fontSize: 9, color: '#ffffff', fontWeight: 'bold', background: '#ff4444',
+            borderRadius: 3, padding: '2px 6px', whiteSpace: 'nowrap',
+          }}>NEWS</span>
+          <span style={{
+            fontSize: 11, color: '#ccccee', whiteSpace: 'nowrap',
+            overflow: 'hidden', textOverflow: 'ellipsis',
+            opacity: newsFade ? 1 : 0, transition: 'opacity 0.3s',
+          }}>
+            {newsItems[newsIndex]}
+          </span>
+        </div>
+      </div>
 
-    let elapsed = 0
-    let hoveredIndex = -1
-    let animationId: number
+      {/* === 中央：キャラ表示エリア === */}
+      <div style={{
+        flex: '1 1 auto', display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center', position: 'relative',
+        minHeight: 0,
+      }}>
+        {/* 背景エフェクト */}
+        <div style={{
+          position: 'absolute', width: 350, height: 350, borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(0,204,255,0.08) 0%, transparent 70%)',
+          pointerEvents: 'none',
+        }} />
 
-    const draw = () => {
-      elapsed += 0.02
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
+        {/* キャラ立ち絵 */}
+        <div style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 1,
+        }}>
+          <span style={{ fontSize: 100 }}>🧑</span>
+          <div style={{ color: '#00ccff', fontSize: 16, fontWeight: 'bold', marginTop: 10 }}>
+            甘利 悠真
+          </div>
+          <div style={{ color: '#888', fontSize: 12, marginTop: 4 }}>D級 | 味覚</div>
+          <div style={{ color: '#666', fontSize: 11, marginTop: 2 }}>Lv.1</div>
+        </div>
 
-      // 背景
-      const bgGrad = ctx.createRadialGradient(
-        canvas.width / 2, canvas.height / 2, 0,
-        canvas.width / 2, canvas.height / 2, canvas.width * 0.7
-      )
-      bgGrad.addColorStop(0, '#0f0f2a')
-      bgGrad.addColorStop(1, '#050510')
-      ctx.fillStyle = bgGrad
-      ctx.fillRect(0, 0, canvas.width, canvas.height)
+        {/* イベントバナー（右） */}
+        <div
+          onClick={() => alert('イベント詳細（今後実装）')}
+          style={{
+            position: 'absolute', right: 10, top: 10,
+            background: 'linear-gradient(135deg, #2a0a3a, #1a0a2a)',
+            border: '1px solid #aa44ff44', borderRadius: 8,
+            padding: '8px 12px', cursor: 'pointer', maxWidth: 120,
+          }}
+        >
+          <div style={{ color: '#aa44ff', fontSize: 9, fontWeight: 'bold' }}>EVENT</div>
+          <div style={{ color: '#fff', fontSize: 11, fontWeight: 'bold', marginTop: 2 }}>覚醒の試練</div>
+          <div style={{ color: '#888', fontSize: 9, marginTop: 2 }}>残り 3日</div>
+        </div>
 
-      // パーティクル
-      for (const p of particles) {
-        p.y -= p.speed
-        if (p.y < -10) {
-          p.y = canvas.height + 10
-          p.x = Math.random() * canvas.width
-        }
-        ctx.globalAlpha = p.alpha + Math.sin(elapsed + p.x * 0.01) * 0.1
-        ctx.fillStyle = p.color
-        ctx.beginPath()
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
-        ctx.fill()
-      }
-      ctx.globalAlpha = 1
+        {/* デイリー（左） */}
+        <div
+          onClick={() => alert('ミッション（今後実装）')}
+          style={{
+            position: 'absolute', left: 10, top: 10,
+            background: 'linear-gradient(135deg, #0a2a1a, #0a1a0a)',
+            border: '1px solid #44ff8844', borderRadius: 8,
+            padding: '8px 12px', cursor: 'pointer', maxWidth: 120,
+          }}
+        >
+          <div style={{ color: '#44ff88', fontSize: 9, fontWeight: 'bold' }}>DAILY</div>
+          <div style={{ color: '#fff', fontSize: 11, fontWeight: 'bold', marginTop: 2 }}>デイリー任務</div>
+          <div style={{ color: '#888', fontSize: 9, marginTop: 2 }}>2/5 達成</div>
+        </div>
+      </div>
 
-      // タイトルロゴ（小さめ）
-      const logoY = startY - 80
-      ctx.font = 'bold 36px Arial'
-      ctx.textAlign = 'center'
-      ctx.textBaseline = 'middle'
+      {/* === 下部ナビバー（丸アイコン） === */}
+      <div style={{
+        flex: '0 0 auto', background: '#0a0a1aEE',
+        borderTop: '1px solid #222244',
+        padding: '10px 10px 15px',
+        display: 'flex', justifyContent: 'space-around', alignItems: 'center',
+      }}>
+        {navButtons.map((btn, i) => (
+          <div
+            key={i}
+            onClick={() => {
+              if (btn.screen === 'menu_sub' || btn.screen === 'option' || btn.screen === 'shop') {
+                alert(`${btn.label}画面（今後実装）`)
+              } else {
+                onNavigate(btn.screen)
+              }
+            }}
+            style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer',
+            }}
+          >
+            <div
+              style={{
+                width: 52, height: 52, borderRadius: '50%',
+                background: 'linear-gradient(135deg, #1a1a3a, #0f0f25)',
+                border: `2px solid ${btn.color}44`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 24, transition: 'all 0.2s',
+                boxShadow: `0 2px 10px ${btn.color}22`,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.border = `2px solid ${btn.color}`
+                e.currentTarget.style.boxShadow = `0 2px 15px ${btn.color}44`
+                e.currentTarget.style.transform = 'scale(1.1)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.border = `2px solid ${btn.color}44`
+                e.currentTarget.style.boxShadow = `0 2px 10px ${btn.color}22`
+                e.currentTarget.style.transform = 'scale(1)'
+              }}
+            >
+              {btn.icon}
+            </div>
+            <span style={{ color: '#cccccc', fontSize: 9, fontWeight: 'bold', marginTop: 4 }}>
+              {btn.label}
+            </span>
+          </div>
+        ))}
+      </div>
 
-      const logoGrad = ctx.createLinearGradient(
-        canvas.width / 2 - 80, logoY,
-        canvas.width / 2 + 80, logoY
-      )
-      logoGrad.addColorStop(0, '#00ffff')
-      logoGrad.addColorStop(1, '#ff00ff')
-      ctx.fillStyle = logoGrad
-      ctx.fillText('S E N S', canvas.width / 2, logoY)
+      {/* === お知らせポップアップ === */}
+      {showNews && (
+        <div style={{
+          position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+          background: 'rgba(0,0,0,0.7)', zIndex: 100,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}
+          onClick={() => setShowNews(false)}
+        >
+          <div
+            style={{
+              background: 'linear-gradient(180deg, #1a1a3a, #0a0a20)',
+              border: '1px solid #333366', borderRadius: 12,
+              padding: '20px', width: '85%', maxWidth: 400, maxHeight: '70vh',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              marginBottom: 15, borderBottom: '1px solid #222244', paddingBottom: 10,
+            }}>
+              <div style={{ color: '#ffffff', fontSize: 18, fontWeight: 'bold' }}>📬 お知らせ</div>
+              <div
+                onClick={() => setShowNews(false)}
+                style={{ color: '#666', fontSize: 20, cursor: 'pointer' }}
+              >✕</div>
+            </div>
 
-      // 区切り線
-      ctx.strokeStyle = '#333355'
-      ctx.lineWidth = 1
-      ctx.beginPath()
-      ctx.moveTo(canvas.width / 2 - 140, logoY + 30)
-      ctx.lineTo(canvas.width / 2 + 140, logoY + 30)
-      ctx.stroke()
-
-      // ボタン描画
-      buttons.forEach((btn, i) => {
-        const rect = buttonRects[i]
-        const isHovered = hoveredIndex === i
-        const bounce = isHovered ? Math.sin(elapsed * 5) * 2 : 0
-        const scale = isHovered ? 1.03 : 1
-        const drawX = rect.x - (rect.w * (scale - 1)) / 2
-        const drawY = rect.y - (rect.h * (scale - 1)) / 2 + bounce
-        const drawW = rect.w * scale
-        const drawH = rect.h * scale
-
-        // ボタン背景
-        ctx.globalAlpha = isHovered ? 0.95 : 0.8
-        const btnGrad = ctx.createLinearGradient(drawX, drawY, drawX + drawW, drawY)
-        btnGrad.addColorStop(0, '#1a1a3a')
-        btnGrad.addColorStop(1, '#12122a')
-        ctx.fillStyle = btnGrad
-
-        // 角丸
-        const radius = 12
-        ctx.beginPath()
-        ctx.moveTo(drawX + radius, drawY)
-        ctx.lineTo(drawX + drawW - radius, drawY)
-        ctx.quadraticCurveTo(drawX + drawW, drawY, drawX + drawW, drawY + radius)
-        ctx.lineTo(drawX + drawW, drawY + drawH - radius)
-        ctx.quadraticCurveTo(drawX + drawW, drawY + drawH, drawX + drawW - radius, drawY + drawH)
-        ctx.lineTo(drawX + radius, drawY + drawH)
-        ctx.quadraticCurveTo(drawX, drawY + drawH, drawX, drawY + drawH - radius)
-        ctx.lineTo(drawX, drawY + radius)
-        ctx.quadraticCurveTo(drawX, drawY, drawX + radius, drawY)
-        ctx.closePath()
-        ctx.fill()
-
-        // ボタン枠線
-        ctx.globalAlpha = isHovered ? 0.9 : 0.4
-        ctx.strokeStyle = btn.color
-        ctx.lineWidth = isHovered ? 2 : 1
-        ctx.stroke()
-
-        ctx.globalAlpha = 1
-
-        // アイコン
-        ctx.font = '28px Arial'
-        ctx.textAlign = 'left'
-        ctx.fillText(btn.icon, drawX + 20, drawY + drawH / 2)
-
-        // ラベル
-        ctx.font = 'bold 22px Arial'
-        ctx.fillStyle = '#ffffff'
-        ctx.textAlign = 'left'
-        ctx.fillText(btn.label, drawX + 60, drawY + drawH / 2 - 8)
-
-        // サブラベル
-        ctx.font = '12px Arial'
-        ctx.fillStyle = '#666688'
-        ctx.fillText(btn.sublabel, drawX + 62, drawY + drawH / 2 + 14)
-
-        // 右矢印
-        ctx.font = '18px Arial'
-        ctx.fillStyle = isHovered ? btn.color : '#444466'
-        ctx.textAlign = 'right'
-        ctx.fillText('▶', drawX + drawW - 20, drawY + drawH / 2)
-      })
-
-      // プレイヤー情報バー
-      ctx.globalAlpha = 0.7
-      ctx.fillStyle = '#0a0a1a'
-      ctx.fillRect(0, canvas.height - 50, canvas.width, 50)
-      ctx.globalAlpha = 1
-
-      ctx.font = '14px Arial'
-      ctx.textAlign = 'left'
-      ctx.fillStyle = '#888888'
-      ctx.fillText('甘利 悠真  |  Lv.1  |  D級  |  味覚', 20, canvas.height - 22)
-
-      ctx.textAlign = 'right'
-      ctx.fillStyle = '#ffaa00'
-      ctx.fillText('💎 1000', canvas.width - 20, canvas.height - 22)
-
-      animationId = requestAnimationFrame(draw)
-    }
-
-    draw()
-
-    // マウスホバー検出
-    const handleMouseMove = (e: MouseEvent) => {
-      const rect = canvas.getBoundingClientRect()
-      const mx = e.clientX - rect.left
-      const my = e.clientY - rect.top
-
-      hoveredIndex = -1
-      buttonRects.forEach((r, i) => {
-        if (mx >= r.x && mx <= r.x + r.w && my >= r.y && my <= r.y + r.h) {
-          hoveredIndex = i
-          canvas.style.cursor = 'pointer'
-        }
-      })
-      if (hoveredIndex === -1) canvas.style.cursor = 'default'
-    }
-
-    // クリック検出
-    const handleClick = (e: MouseEvent) => {
-      const rect = canvas.getBoundingClientRect()
-      const mx = e.clientX - rect.left
-      const my = e.clientY - rect.top
-
-      buttonRects.forEach((r, i) => {
-        if (mx >= r.x && mx <= r.x + r.w && my >= r.y && my <= r.y + r.h) {
-          onNavigate(buttons[i].screen)
-        }
-      })
-    }
-
-    canvas.addEventListener('mousemove', handleMouseMove)
-    canvas.addEventListener('click', handleClick)
-
-    const handleResize = () => {
-      canvas.width = window.innerWidth
-      canvas.height = window.innerHeight
-    }
-    window.addEventListener('resize', handleResize)
-
-    return () => {
-      cancelAnimationFrame(animationId)
-      canvas.removeEventListener('mousemove', handleMouseMove)
-      canvas.removeEventListener('click', handleClick)
-      window.removeEventListener('resize', handleResize)
-    }
-  }, [onNavigate])
-
-  return <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block' }} />
+            {newsItems.map((news, i) => (
+              <div key={i} style={{
+                padding: '12px 10px', borderBottom: '1px solid #1a1a33',
+                cursor: 'pointer',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{
+                    fontSize: 8, color: '#fff', fontWeight: 'bold',
+                    background: i === 0 ? '#ff4444' : '#444466',
+                    borderRadius: 3, padding: '2px 5px',
+                  }}>
+                    {i === 0 ? 'NEW' : 'INFO'}
+                  </span>
+                  <span style={{ color: '#ccccee', fontSize: 13 }}>{news}</span>
+                </div>
+                <div style={{ color: '#555', fontSize: 10, marginTop: 4, paddingLeft: 40 }}>
+                  2026/04/{String(9 - i).padStart(2, '0')}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
 }
