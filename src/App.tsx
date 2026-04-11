@@ -5,12 +5,33 @@ import StoryScreen from './game/scenes/StoryScreen'
 import BattleScreen from './game/scenes/BattleScreen'
 import GachaScreen from './game/scenes/GachaScreen'
 import TeamScreen from './game/scenes/TeamScreen'
+import QuestScreen from './game/scenes/QuestScreen'
+import ShopScreen from './game/scenes/ShopScreen'
+import OptionScreen from './game/scenes/OptionScreen'
+import type { QuestData } from './game/scenes/QuestScreen'
 import './App.css'
 
-type Screen = 'title' | 'menu' | 'battle' | 'gacha' | 'story' | 'team'
+type Screen = 'title' | 'menu' | 'battle' | 'gacha' | 'story' | 'team' | 'quest' | 'shop' | 'option'
 
 function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('title')
+  const [currentQuest, setCurrentQuest] = useState<QuestData | null>(null)
+  const [diamonds, setDiamonds] = useState(1000)
+  const [gold, setGold] = useState(125000)
+
+  const handleStartBattle = (quest: QuestData) => {
+    setCurrentQuest(quest)
+    if (quest.type === 'story') {
+      setCurrentScreen('story')
+    } else {
+      setCurrentScreen('battle')
+    }
+  }
+
+  const handleBattleClear = (rewards: { gold: number; diamond: number; exp: number }) => {
+    setGold(prev => prev + rewards.gold)
+    setDiamonds(prev => prev + rewards.diamond)
+  }
 
   return (
     <div style={{ width: '100vw', height: '100vh', background: '#000' }}>
@@ -18,19 +39,43 @@ function App() {
         <TitleScreen onStart={() => setCurrentScreen('menu')} />
       )}
       {currentScreen === 'menu' && (
-        <MenuScreen onNavigate={(screen) => setCurrentScreen(screen as Screen)} />
+        <MenuScreen onNavigate={(screen) => {
+          if (screen === 'story' || screen === 'battle') {
+            setCurrentScreen('quest')
+          } else {
+            setCurrentScreen(screen as Screen)
+          }
+        }} />
+      )}
+      {currentScreen === 'quest' && (
+        <QuestScreen onBack={() => setCurrentScreen('menu')} onStartBattle={handleStartBattle} />
       )}
       {currentScreen === 'story' && (
-        <StoryScreen onBack={() => setCurrentScreen('menu')} />
+        <StoryScreen onBack={() => {
+          if (currentQuest) setCurrentScreen('battle')
+          else setCurrentScreen('menu')
+        }} />
       )}
       {currentScreen === 'battle' && (
-        <BattleScreen onBack={() => setCurrentScreen('menu')} />
+        <BattleScreen
+          onBack={() => setCurrentScreen('quest')}
+          questName={currentQuest?.name}
+          enemyLevel={currentQuest?.enemyLevel}
+          rewards={currentQuest?.rewards}
+          onClear={handleBattleClear}
+        />
       )}
       {currentScreen === 'gacha' && (
         <GachaScreen onBack={() => setCurrentScreen('menu')} />
       )}
       {currentScreen === 'team' && (
         <TeamScreen onBack={() => setCurrentScreen('menu')} />
+      )}
+      {currentScreen === 'shop' && (
+        <ShopScreen onBack={() => setCurrentScreen('menu')} />
+      )}
+      {currentScreen === 'option' && (
+        <OptionScreen onBack={() => setCurrentScreen('menu')} />
       )}
     </div>
   )

@@ -221,7 +221,7 @@ export default function MenuScreen({ onNavigate }: MenuScreenProps) {
           <div
             key={i}
             onClick={() => {
-              if (btn.screen === 'menu_sub' || btn.screen === 'option' || btn.screen === 'shop') {
+              if (btn.screen === 'menu_sub') {
                 alert(`${btn.label}画面（今後実装）`)
               } else {
                 onNavigate(btn.screen)
