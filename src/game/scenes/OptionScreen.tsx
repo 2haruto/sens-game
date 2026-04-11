@@ -1,63 +1,46 @@
 import { useState } from 'react'
+import { useGameStore } from '../../stores/gameStore'
 
 interface OptionScreenProps {
   onBack: () => void
 }
 
 export default function OptionScreen({ onBack }: OptionScreenProps) {
-  const [bgmVolume, setBgmVolume] = useState(70)
-  const [seVolume, setSeVolume] = useState(80)
-  const [voiceVolume, setVoiceVolume] = useState(90)
-  const [quality, setQuality] = useState<'low' | 'mid' | 'high'>('high')
-  const [notifications, setNotifications] = useState(true)
-  const [autoPlay, setAutoPlay] = useState(false)
-  const [language, setLanguage] = useState<'ja' | 'en'>('ja')
+  const { settings, updateSettings, playerName, resetAll } = useGameStore()
   const [showReset, setShowReset] = useState(false)
   const [message, setMessage] = useState('')
 
-  const VolumeSlider = ({ label, icon, value, onChange }: {
-    label: string; icon: string; value: number; onChange: (v: number) => void
+  const VolumeSlider = ({ label, icon, value, settingKey }: {
+    label: string; icon: string; value: number; settingKey: 'bgmVolume' | 'seVolume' | 'voiceVolume'
   }) => (
     <div style={{ marginBottom: 15 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
         <span style={{ color: '#ccccee', fontSize: 13 }}>{icon} {label}</span>
         <span style={{ color: '#00ccff', fontSize: 13, fontWeight: 'bold' }}>{value}%</span>
       </div>
-      <div style={{ position: 'relative', height: 30, display: 'flex', alignItems: 'center' }}>
-        <input
-          type="range" min="0" max="100" value={value}
-          onChange={(e) => onChange(Number(e.target.value))}
-          style={{
-            width: '100%', height: 6, appearance: 'none', background: '#1a1a3a',
-            borderRadius: 3, outline: 'none',
-            accentColor: '#00ccff',
-          }}
-        />
-      </div>
+      <input type="range" min="0" max="100" value={value}
+        onChange={(e) => updateSettings({ [settingKey]: Number(e.target.value) })}
+        style={{ width: '100%', height: 6, appearance: 'none', background: '#1a1a3a', borderRadius: 3, outline: 'none', accentColor: '#00ccff' }}
+      />
     </div>
   )
 
-  const ToggleSwitch = ({ label, icon, value, onChange }: {
-    label: string; icon: string; value: boolean; onChange: (v: boolean) => void
+  const ToggleSwitch = ({ label, icon, value, settingKey }: {
+    label: string; icon: string; value: boolean; settingKey: 'notifications' | 'autoPlay'
   }) => (
     <div style={{
       display: 'flex', justifyContent: 'space-between', alignItems: 'center',
       padding: '12px 0', borderBottom: '1px solid #1a1a33',
     }}>
       <span style={{ color: '#ccccee', fontSize: 13 }}>{icon} {label}</span>
-      <div
-        onClick={() => onChange(!value)}
-        style={{
-          width: 50, height: 26, borderRadius: 13, cursor: 'pointer',
-          background: value ? '#00cc66' : '#333355',
-          position: 'relative', transition: 'background 0.3s',
-        }}
-      >
+      <div onClick={() => updateSettings({ [settingKey]: !value })} style={{
+        width: 50, height: 26, borderRadius: 13, cursor: 'pointer',
+        background: value ? '#00cc66' : '#333355', position: 'relative', transition: 'background 0.3s',
+      }}>
         <div style={{
-          width: 22, height: 22, borderRadius: '50%',
-          background: '#ffffff', position: 'absolute', top: 2,
-          left: value ? 26 : 2, transition: 'left 0.3s',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+          width: 22, height: 22, borderRadius: '50%', background: '#ffffff',
+          position: 'absolute', top: 2, left: value ? 26 : 2,
+          transition: 'left 0.3s', boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
         }} />
       </div>
     </div>
@@ -70,8 +53,6 @@ export default function OptionScreen({ onBack }: OptionScreenProps) {
       display: 'flex', flexDirection: 'column', fontFamily: 'Arial, sans-serif',
       overflow: 'hidden', position: 'relative',
     }}>
-
-      {/* ヘッダー */}
       <div style={{
         flex: '0 0 auto', display: 'flex', justifyContent: 'space-between',
         alignItems: 'center', padding: '12px 15px', borderBottom: '1px solid #222244',
@@ -81,63 +62,42 @@ export default function OptionScreen({ onBack }: OptionScreenProps) {
         <div style={{ width: 50 }} />
       </div>
 
-      {/* メッセージ */}
       {message && (
-        <div style={{
-          background: '#111133', margin: '5px 10px', padding: '8px 15px',
-          borderRadius: 6, border: '1px solid #333366', textAlign: 'center',
-        }}>
+        <div style={{ background: '#111133', margin: '5px 10px', padding: '8px 15px', borderRadius: 6, border: '1px solid #333366', textAlign: 'center' }}>
           <span style={{ color: '#44ff88', fontSize: 13 }}>{message}</span>
         </div>
       )}
 
-      {/* 設定一覧 */}
       <div style={{ flex: '1 1 auto', overflowY: 'auto', padding: '15px 20px' }}>
-
-        {/* サウンド設定 */}
-        <div style={{
-          background: '#111133', borderRadius: 10, padding: '15px 20px',
-          border: '1px solid #222255', marginBottom: 12,
-        }}>
-          <div style={{ color: '#ffffff', fontSize: 15, fontWeight: 'bold', marginBottom: 12 }}>
-            🔊 サウンド設定
-          </div>
-          <VolumeSlider label="BGM音量" icon="🎵" value={bgmVolume} onChange={setBgmVolume} />
-          <VolumeSlider label="SE音量" icon="🔔" value={seVolume} onChange={setSeVolume} />
-          <VolumeSlider label="ボイス音量" icon="🗣️" value={voiceVolume} onChange={setVoiceVolume} />
+        {/* サウンド */}
+        <div style={{ background: '#111133', borderRadius: 10, padding: '15px 20px', border: '1px solid #222255', marginBottom: 12 }}>
+          <div style={{ color: '#ffffff', fontSize: 15, fontWeight: 'bold', marginBottom: 12 }}>🔊 サウンド設定</div>
+          <VolumeSlider label="BGM音量" icon="🎵" value={settings.bgmVolume} settingKey="bgmVolume" />
+          <VolumeSlider label="SE音量" icon="🔔" value={settings.seVolume} settingKey="seVolume" />
+          <VolumeSlider label="ボイス音量" icon="🗣️" value={settings.voiceVolume} settingKey="voiceVolume" />
         </div>
 
         {/* ゲーム設定 */}
-        <div style={{
-          background: '#111133', borderRadius: 10, padding: '15px 20px',
-          border: '1px solid #222255', marginBottom: 12,
-        }}>
-          <div style={{ color: '#ffffff', fontSize: 15, fontWeight: 'bold', marginBottom: 8 }}>
-            🎮 ゲーム設定
-          </div>
-
-          {/* グラフィック品質 */}
+        <div style={{ background: '#111133', borderRadius: 10, padding: '15px 20px', border: '1px solid #222255', marginBottom: 12 }}>
+          <div style={{ color: '#ffffff', fontSize: 15, fontWeight: 'bold', marginBottom: 8 }}>🎮 ゲーム設定</div>
           <div style={{ marginBottom: 12 }}>
             <div style={{ color: '#ccccee', fontSize: 13, marginBottom: 8 }}>🖥️ グラフィック品質</div>
             <div style={{ display: 'flex', gap: 8 }}>
               {(['low', 'mid', 'high'] as const).map(q => (
-                <div key={q} onClick={() => setQuality(q)} style={{
+                <div key={q} onClick={() => updateSettings({ quality: q })} style={{
                   flex: 1, textAlign: 'center', padding: '8px 0', borderRadius: 6, cursor: 'pointer',
-                  background: quality === q ? '#00ccff22' : '#0a0a1a',
-                  border: quality === q ? '1px solid #00ccff' : '1px solid #333355',
-                  color: quality === q ? '#00ccff' : '#666688',
-                  fontSize: 12, fontWeight: 'bold', transition: 'all 0.2s',
+                  background: settings.quality === q ? '#00ccff22' : '#0a0a1a',
+                  border: settings.quality === q ? '1px solid #00ccff' : '1px solid #333355',
+                  color: settings.quality === q ? '#00ccff' : '#666688',
+                  fontSize: 12, fontWeight: 'bold',
                 }}>
                   {q === 'low' ? '低' : q === 'mid' ? '中' : '高'}
                 </div>
               ))}
             </div>
           </div>
-
-          <ToggleSwitch label="通知" icon="🔔" value={notifications} onChange={setNotifications} />
-          <ToggleSwitch label="ストーリーオート再生" icon="▶️" value={autoPlay} onChange={setAutoPlay} />
-
-          {/* 言語設定 */}
+          <ToggleSwitch label="通知" icon="🔔" value={settings.notifications} settingKey="notifications" />
+          <ToggleSwitch label="ストーリーオート再生" icon="▶️" value={settings.autoPlay} settingKey="autoPlay" />
           <div style={{
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             padding: '12px 0', borderBottom: '1px solid #1a1a33',
@@ -145,11 +105,11 @@ export default function OptionScreen({ onBack }: OptionScreenProps) {
             <span style={{ color: '#ccccee', fontSize: 13 }}>🌐 言語</span>
             <div style={{ display: 'flex', gap: 6 }}>
               {(['ja', 'en'] as const).map(lang => (
-                <div key={lang} onClick={() => setLanguage(lang)} style={{
+                <div key={lang} onClick={() => updateSettings({ language: lang })} style={{
                   padding: '5px 14px', borderRadius: 5, cursor: 'pointer',
-                  background: language === lang ? '#00ccff22' : '#0a0a1a',
-                  border: language === lang ? '1px solid #00ccff' : '1px solid #333355',
-                  color: language === lang ? '#00ccff' : '#666688',
+                  background: settings.language === lang ? '#00ccff22' : '#0a0a1a',
+                  border: settings.language === lang ? '1px solid #00ccff' : '1px solid #333355',
+                  color: settings.language === lang ? '#00ccff' : '#666688',
                   fontSize: 12, fontWeight: 'bold',
                 }}>
                   {lang === 'ja' ? '日本語' : 'English'}
@@ -160,93 +120,35 @@ export default function OptionScreen({ onBack }: OptionScreenProps) {
         </div>
 
         {/* アカウント */}
-        <div style={{
-          background: '#111133', borderRadius: 10, padding: '15px 20px',
-          border: '1px solid #222255', marginBottom: 12,
-        }}>
-          <div style={{ color: '#ffffff', fontSize: 15, fontWeight: 'bold', marginBottom: 8 }}>
-            👤 アカウント
-          </div>
-
-          <div style={{
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            padding: '10px 0', borderBottom: '1px solid #1a1a33',
-          }}>
+        <div style={{ background: '#111133', borderRadius: 10, padding: '15px 20px', border: '1px solid #222255', marginBottom: 12 }}>
+          <div style={{ color: '#ffffff', fontSize: 15, fontWeight: 'bold', marginBottom: 8 }}>👤 アカウント</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #1a1a33' }}>
             <span style={{ color: '#ccccee', fontSize: 13 }}>プレイヤーID</span>
             <span style={{ color: '#888', fontSize: 12 }}>SENS-2026-0001</span>
           </div>
-
-          <div style={{
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            padding: '10px 0', borderBottom: '1px solid #1a1a33',
-          }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #1a1a33' }}>
             <span style={{ color: '#ccccee', fontSize: 13 }}>プレイヤー名</span>
-            <span style={{ color: '#fff', fontSize: 12, fontWeight: 'bold' }}>甘利 悠真</span>
-          </div>
-
-          <div style={{
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            padding: '10px 0', borderBottom: '1px solid #1a1a33',
-          }}>
-            <span style={{ color: '#ccccee', fontSize: 13 }}>データ連携</span>
-            <div onClick={() => setMessage('データ連携機能は今後実装予定です')} style={{
-              background: '#4444aa', color: '#fff', padding: '5px 15px',
-              borderRadius: 5, fontSize: 11, cursor: 'pointer',
-            }}>連携する</div>
+            <span style={{ color: '#fff', fontSize: 12, fontWeight: 'bold' }}>{playerName}</span>
           </div>
         </div>
 
-        {/* サポート */}
-        <div style={{
-          background: '#111133', borderRadius: 10, padding: '15px 20px',
-          border: '1px solid #222255', marginBottom: 12,
-        }}>
-          <div style={{ color: '#ffffff', fontSize: 15, fontWeight: 'bold', marginBottom: 8 }}>
-            📬 サポート
-          </div>
-
-          {[
-            { label: 'お問い合わせ', icon: '✉️' },
-            { label: '利用規約', icon: '📄' },
-            { label: 'プライバシーポリシー', icon: '🔒' },
-            { label: 'クレジット', icon: '📝' },
-          ].map((item, i) => (
-            <div key={i} onClick={() => setMessage(`${item.label}は今後実装予定です`)} style={{
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              padding: '10px 0', borderBottom: i < 3 ? '1px solid #1a1a33' : 'none',
-              cursor: 'pointer',
-            }}>
-              <span style={{ color: '#ccccee', fontSize: 13 }}>{item.icon} {item.label}</span>
-              <span style={{ color: '#444', fontSize: 14 }}>▶</span>
-            </div>
-          ))}
-        </div>
-
-        {/* バージョン情報 */}
-        <div style={{
-          background: '#111133', borderRadius: 10, padding: '15px 20px',
-          border: '1px solid #222255', marginBottom: 12,
-        }}>
-          <div style={{
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          }}>
+        {/* バージョン */}
+        <div style={{ background: '#111133', borderRadius: 10, padding: '15px 20px', border: '1px solid #222255', marginBottom: 12 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <span style={{ color: '#ccccee', fontSize: 13 }}>📱 バージョン</span>
             <span style={{ color: '#888', fontSize: 12 }}>v0.1.0 (Early Access)</span>
           </div>
         </div>
 
-        {/* データリセット */}
+        {/* リセット */}
         <div style={{ textAlign: 'center', marginTop: 10, marginBottom: 30 }}>
-          <div onClick={() => setShowReset(true)} style={{
-            color: '#ff4444', fontSize: 13, cursor: 'pointer',
-            padding: '10px 0',
-          }}>
+          <div onClick={() => setShowReset(true)} style={{ color: '#ff4444', fontSize: 13, cursor: 'pointer', padding: '10px 0' }}>
             ⚠️ データリセット
           </div>
         </div>
       </div>
 
-      {/* リセット確認ポップアップ */}
+      {/* リセット確認 */}
       {showReset && (
         <div style={{
           position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
@@ -255,24 +157,15 @@ export default function OptionScreen({ onBack }: OptionScreenProps) {
         }} onClick={() => setShowReset(false)}>
           <div style={{
             background: 'linear-gradient(180deg, #1a1a3a, #0a0a20)',
-            border: '1px solid #ff444444', borderRadius: 12,
-            padding: '25px', width: '80%', maxWidth: 350, textAlign: 'center',
+            border: '1px solid #ff444444', borderRadius: 12, padding: '25px',
+            width: '80%', maxWidth: 350, textAlign: 'center',
           }} onClick={(e) => e.stopPropagation()}>
             <div style={{ fontSize: 30, marginBottom: 10 }}>⚠️</div>
-            <div style={{ color: '#ffffff', fontSize: 16, fontWeight: 'bold', marginBottom: 8 }}>
-              データリセット
-            </div>
-            <div style={{ color: '#ff4444', fontSize: 13, marginBottom: 5 }}>
-              すべてのデータが削除されます
-            </div>
-            <div style={{ color: '#888', fontSize: 12, marginBottom: 20 }}>
-              この操作は取り消せません。本当にリセットしますか？
-            </div>
+            <div style={{ color: '#fff', fontSize: 16, fontWeight: 'bold', marginBottom: 8 }}>データリセット</div>
+            <div style={{ color: '#ff4444', fontSize: 13, marginBottom: 5 }}>すべてのデータが削除されます</div>
+            <div style={{ color: '#888', fontSize: 12, marginBottom: 20 }}>この操作は取り消せません</div>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
-              <button onClick={() => {
-                setShowReset(false)
-                setMessage('データがリセットされました（デモ）')
-              }} style={{
+              <button onClick={() => { resetAll(); setShowReset(false); setMessage('データがリセットされました') }} style={{
                 background: '#ff4444', color: '#fff', border: 'none', borderRadius: 8,
                 padding: '10px 25px', fontSize: 14, fontWeight: 'bold', cursor: 'pointer',
               }}>リセットする</button>
