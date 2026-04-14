@@ -91,7 +91,12 @@ export default function MenuScreen({ onNavigate }: MenuScreenProps) {
       <div style={{ flex: '1 1 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', minHeight: 0 }}>
         <div style={{ position: 'absolute', width: 350, height: 350, borderRadius: '50%', background: 'radial-gradient(circle, rgba(0,204,255,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 1 }}>
-          <span style={{ fontSize: 100 }}>🧑</span>
+          <div style={{ width: 300, height: 400, overflow: 'hidden', borderRadius: 0, position: 'relative' }}>
+            <img src="/src/assets/yuma.png" alt="甘利 悠真" style={{
+              width: '180%', height: 'auto', objectFit: 'cover',
+              position: 'absolute', top: '-10%', left: '-40%',
+            }} />
+          </div>
           <div style={{ color: '#00ccff', fontSize: 16, fontWeight: 'bold', marginTop: 10 }}>{playerName}</div>
           <div style={{ color: '#888', fontSize: 12, marginTop: 4 }}>D級 | 味覚</div>
           <div style={{ color: '#666', fontSize: 11, marginTop: 2 }}>Lv.1</div>

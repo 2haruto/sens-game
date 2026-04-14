@@ -16,8 +16,6 @@ type Screen = 'title' | 'menu' | 'battle' | 'gacha' | 'story' | 'team' | 'quest'
 function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('title')
   const [currentQuest, setCurrentQuest] = useState<QuestData | null>(null)
-  const [diamonds, setDiamonds] = useState(1000)
-  const [gold, setGold] = useState(125000)
 
   const handleStartBattle = (quest: QuestData) => {
     setCurrentQuest(quest)
@@ -28,11 +26,6 @@ function App() {
     }
   }
 
-  const handleBattleClear = (rewards: { gold: number; diamond: number; exp: number }) => {
-    setGold(prev => prev + rewards.gold)
-    setDiamonds(prev => prev + rewards.diamond)
-  }
-
   return (
     <div style={{ width: '100vw', height: '100vh', background: '#000' }}>
       {currentScreen === 'title' && (
@@ -40,11 +33,8 @@ function App() {
       )}
       {currentScreen === 'menu' && (
         <MenuScreen onNavigate={(screen) => {
-          if (screen === 'story' || screen === 'battle') {
-            setCurrentScreen('quest')
-          } else {
-            setCurrentScreen(screen as Screen)
-          }
+          if (screen === 'story' || screen === 'battle') setCurrentScreen('quest')
+          else setCurrentScreen(screen as Screen)
         }} />
       )}
       {currentScreen === 'quest' && (
@@ -60,9 +50,9 @@ function App() {
         <BattleScreen
           onBack={() => setCurrentScreen('quest')}
           questName={currentQuest?.name}
+          questId={currentQuest?.id}
           enemyLevel={currentQuest?.enemyLevel}
           rewards={currentQuest?.rewards}
-          onClear={handleBattleClear}
         />
       )}
       {currentScreen === 'gacha' && (
